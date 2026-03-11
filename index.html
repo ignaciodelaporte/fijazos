@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gastos">
+<meta name="theme-color" content="#c9a84c">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Gastos Fijos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #242220;
+    --border: #2e2c28;
+    --accent: #c9a84c;
+    --accent2: #e8c97a;
+    --text: #f0ece3;
+    --muted: #7a776e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--accent2);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  .total-card {
+    background: var(--accent);
+    color: #0f0e0c;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .total-card .label { font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 500; opacity: 0.7; }
+  .total-card .amount { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 400; line-height: 1; }
+  .total-card .count { font-size: 0.75rem; opacity: 0.6; margin-top: 0.25rem; }
+  .category {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .category:hover { border-color: var(--accent); }
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    gap: 1rem;
+  }
+  .category-header:hover { background: var(--surface2); }
+  .cat-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+  .cat-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .cat-name { font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); font-weight: 500; }
+  .cat-right { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+  .cat-total { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--accent2); }
+  .cat-pct { font-size: 0.65rem; color: var(--muted); background: var(--surface2); padding: 2px 6px; border-radius: 4px; min-width: 40px; text-align: center; }
+  .chevron { color: var(--muted); font-size: 0.7rem; transition: transform 0.2s; }
+  .category.open .chevron { transform: rotate(180deg); }
+  .cat-bar { height: 2px; background: var(--border); margin: 0 1.25rem; }
+  .cat-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.6s ease; }
+  .items { display: none; padding: 0.5rem 0; }
+  .category.open .items { display: block; }
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1.25rem;
+    gap: 1rem;
+    border-top: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .item:hover { background: var(--surface2); }
+  .item-name { font-size: 0.78rem; color: #c8c4bc; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-input-wrap { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+  .currency { font-size: 0.7rem; color: var(--muted); }
+  .item-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+    width: 140px;
+    text-align: right;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  .item-input::-webkit-outer-spin-button,
+  .item-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .item-input:focus { outline: none; border-color: var(--accent); background: var(--surface2); }
+  .item-input::placeholder { color: var(--muted); }
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.65rem; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2.5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Gastos Fijos</h1>
+    <p>Hogar · Tucumán</p>
+  </header>
+  <div class="total-card">
+    <div>
+      <div class="label">Total mensual</div>
+      <div class="amount" id="grand-total">$ 0</div>
+      <div class="count" id="item-count">0 ítems cargados</div>
+    </div>
+    <div style="text-align:right">
+      <div class="label">Sin cargar</div>
+      <div class="amount" id="pending-count" style="font-size:2rem">0</div>
+    </div>
+  </div>
+  <div id="categories"></div>
+  <div class="footer-note">Los valores se guardan automáticamente</div>
+</div>
+<script>
+const DATA = [
+  { id:"personal", icon:"🏠", name:"Personal Doméstico", items:["Caro","Day","Jardinero","Piletero"] },
+  { id:"servicios", icon:"🔌", name:"Servicios del Hogar", items:["Luz","Gas","Agua","Internet"] },
+  { id:"vivienda", icon:"🏢", name:"Vivienda", items:["Expensas"] },
+  { id:"impuestos", icon:"🏛️", name:"Impuestos", items:["Impuesto Municipal","Impuesto Provincial"] },
+  { id:"vehiculos", icon:"🚗", name:"Vehículos", items:["Patente Toyota","Patente BYD","Patente Moto","Seguro Toyota","Seguro BYD","Seguro Moto","Nafta"] },
+  { id:"alimentos", icon:"🛒", name:"Alimentación y Compras", items:["Pedidos Ya Super","Semanales","Octaviano"] },
+  { id:"ocio", icon:"🍕", name:"Ocio / Delivery", items:["Pedidos Ya Ocio"] },
+  { id:"educacion", icon:"📚", name:"Hijos / Educación", items:["Colegios","Running Pilar","Fútbol Valen","Cerámica JC","Tucumán Rugby","Rugby"] },
+  { id:"salud", icon:"🧠", name:"Salud", items:["Psicóloga","Psicopedagoga","Fonoaudióloga"] }
+];
+
+const saved = (() => { try { return JSON.parse(localStorage.getItem('gastos_fijos')||'{}'); } catch { return {}; } })();
+
+function save() {
+  const out = {};
+  document.querySelectorAll('.item-input').forEach(inp => { out[inp.dataset.key] = inp.value; });
+  try { localStorage.setItem('gastos_fijos', JSON.stringify(out)); } catch {}
+}
+
+function fmt(n) {
+  if (!n) return '$ 0';
+  return '$ ' + Math.round(n).toLocaleString('es-AR');
+}
+
+function recalc() {
+  let grand = 0, loaded = 0, pending = 0;
+  const catTotals = {};
+  DATA.forEach(cat => {
+    let ct = 0;
+    cat.items.forEach(item => {
+      const inp = document.querySelector('[data-key="'+cat.id+'::'+item+'"]');
+      const val = inp ? parseFloat(inp.value) || 0 : 0;
+      ct += val;
+      if (val > 0) loaded++; else pending++;
+    });
+    catTotals[cat.id] = ct;
+    grand += ct;
+  });
+  document.getElementById('grand-total').textContent = fmt(grand);
+  document.getElementById('item-count').textContent = loaded + ' ítem' + (loaded!==1?'s':'') + ' cargado' + (loaded!==1?'s':'');
+  document.getElementById('pending-count').textContent = pending;
+  DATA.forEach(cat => {
+    const total = catTotals[cat.id];
+    const pct = grand > 0 ? (total/grand*100) : 0;
+    const el = document.getElementById('cat-total-'+cat.id);
+    const pctEl = document.getElementById('cat-pct-'+cat.id);
+    const bar = document.getElementById('cat-bar-'+cat.id);
+    if (el) el.textContent = fmt(total);
+    if (pctEl) pctEl.textContent = pct.toFixed(1)+'%';
+    if (bar) bar.style.width = pct+'%';
+  });
+}
+
+const container = document.getElementById('categories');
+DATA.forEach(cat => {
+  const div = document.createElement('div');
+  div.className = 'category open';
+  const header = document.createElement('div');
+  header.className = 'category-header';
+  header.innerHTML = '<div class="cat-left"><span class="cat-icon">'+cat.icon+'</span><span class="cat-name">'+cat.name+'</span></div><div class="cat-right"><span class="cat-pct" id="cat-pct-'+cat.id+'">0%</span><span class="cat-total" id="cat-total-'+cat.id+'">$ 0</span><span class="chevron">▼</span></div>';
+  header.addEventListener('click', () => div.classList.toggle('open'));
+  const barWrap = document.createElement('div');
+  barWrap.className = 'cat-bar';
+  barWrap.innerHTML = '<div class="cat-bar-fill" id="cat-bar-'+cat.id+'" style="width:0%"></div>';
+  const itemsDiv = document.createElement('div');
+  itemsDiv.className = 'items';
+  cat.items.forEach(item => {
+    const key = cat.id+'::'+item;
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML = '<span class="item-name">'+item+'</span><div class="item-input-wrap"><span class="currency">$</span><input class="item-input" type="number" min="0" step="100" placeholder="0" data-key="'+key+'" value="'+(saved[key]||'')+'"></div>';
+    itemsDiv.appendChild(row);
+  });
+  div.appendChild(header);
+  div.appendChild(barWrap);
+  div.appendChild(itemsDiv);
+  container.appendChild(div);
+});
+
+document.querySelectorAll('.item-input').forEach(inp => {
+  inp.addEventListener('input', () => { recalc(); save(); });
+});
+
+recalc();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
